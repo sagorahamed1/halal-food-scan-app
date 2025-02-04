@@ -292,7 +292,12 @@ class _ScanQrCodeScreenState extends State<ScanQrCodeScreen> {
                   onDetect: (barcodes) {
                     final barcode = barcodes.barcodes.first;
                     if (barcode.rawValue != null) {
-                      print('-----------------------------v--------${barcode}');
+                      print('-----------------------------a--------${barcode}');
+                      print('-----------------------------b--------${barcode.rawValue}');
+                      print('-----------------------------c--------${barcode.contactInfo?.name}');
+                      print('-----------------------------d--------${barcode.url}');
+                      print('-----------------------------e--------${barcode.sms}');
+                      print('-----------------------------f--------${barcode.type}');
                       _processScannerData(barcode.rawValue);
                     }
                   },
