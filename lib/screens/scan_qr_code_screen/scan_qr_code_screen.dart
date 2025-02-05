@@ -154,9 +154,13 @@
 //   }
 // }
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'package:scanner_app/food_model.dart';
 
 class ScanQrCodeScreen extends StatefulWidget {
   const ScanQrCodeScreen({Key? key}) : super(key: key);
@@ -205,7 +209,7 @@ class _ScanQrCodeScreenState extends State<ScanQrCodeScreen> {
     "E300": "✅ Halal", "E301": "✅ Halal", "E306": "✅ Halal",
     "E406": "✅ Halal", "E410": "✅ Halal", "E412": "✅ Halal",
     "E440": "✅ Halal", "E900": "✅ Halal", "E901": "✅ Halal",
-    "E902": "✅ Halal", "E903": "✅ Halal",
+    "E902": "✅ Halal", "E903": "✅ Halal", "E392": "✅ Halal","E322": "✅ Halal",
   };
 
   String checkHalalStatus(String data) {
@@ -292,13 +296,14 @@ class _ScanQrCodeScreenState extends State<ScanQrCodeScreen> {
                   onDetect: (barcodes) {
                     final barcode = barcodes.barcodes.first;
                     if (barcode.rawValue != null) {
+                      getECode(barcode.rawValue.toString());
                       print('-----------------------------a--------${barcode}');
                       print('-----------------------------b--------${barcode.rawValue}');
                       print('-----------------------------c--------${barcode.contactInfo?.name}');
                       print('-----------------------------d--------${barcode.url}');
                       print('-----------------------------e--------${barcode.sms}');
                       print('-----------------------------f--------${barcode.type}');
-                      _processScannerData(barcode.rawValue);
+
                     }
                   },
                 ),
@@ -321,4 +326,40 @@ class _ScanQrCodeScreenState extends State<ScanQrCodeScreen> {
     scannerController.dispose();
     super.dispose();
   }
+
+  Future<void> getECode(String barcode) async {
+    final url = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$barcode.json');
+
+    try {
+      final response = await http.get(url);
+
+      print("-------------------code : ${response.statusCode}   \n ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 1) {
+          // FoodModel food = data;
+          String productName = data['product']['product_name'] ?? 'Unknown Product';
+          String eCode = data['product']['additives_tags'][0] ?? '$barcode';
+
+          print("📦 Product: $productName");
+          print("🔢 E-Code: $eCode");
+          // print("=== food code : ${food.code}");
+          print("=== food product : ${data['product']['additives_tags']}");
+          _processScannerData(eCode);
+        } else {
+          print("❌ No product found for this barcode.");
+        }
+      } else {
+        print("⚠️ Error fetching data.");
+      }
+    } catch (e, s) {
+      print("🚨 Exception: $e");
+      print("🚨 Exception: $s");
+    }
+  }
 }
+
+
+
+
