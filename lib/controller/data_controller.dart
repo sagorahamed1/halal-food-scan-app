@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:scanner_app/data/e_code.dart';
 
 class ScanQrCodeController extends GetxController {
+  RxBool isScannerOpen = false.obs;
   var hasPermission = false.obs;
   var isFlashOn = false.obs;
   late MobileScannerController scannerController;
@@ -15,15 +17,19 @@ class ScanQrCodeController extends GetxController {
   void onInit() {
     super.onInit();
     scannerController = MobileScannerController();
-    _checkPermission();
+    checkPermission();
   }
 
-  Future<void> _checkPermission() async {
-    final status = await Permission.camera.request();
+  Future<void> checkPermission() async {
+    var status = await Permission.camera.request();
     if (status.isGranted) {
       hasPermission.value = true;
-      await Future.delayed(const Duration(seconds: 1));
+      print("✅ Camera permission granted!");
       scannerController.start();
+      update();
+    } else {
+      hasPermission.value = false;
+      print("❌ Camera permission denied!");
     }
   }
 
@@ -32,19 +38,21 @@ class ScanQrCodeController extends GetxController {
     scannerController.toggleTorch();
   }
 
-  String checkHalalStatus(String data) {
-    for (var code in ECode.eCodeStatus.keys) {
-      if (data.contains(code)) {
-        return ECode.eCodeStatus[code]!;
-      }
+  void toggleScannerOpen() {
+    isScannerOpen.value = !isScannerOpen.value;
+    if (isScannerOpen.value) {
+      scannerController.start();
+      update();
+    } else {
+      scannerController.stop();
     }
-    return "Unknown";
   }
 
-  Future<void> processScannerData(dynamic data) async {
-    if (data == null) return;
+
+
+  Future<void> processScannerData(String data) async {
     scannerController.stop();
-    dynamic halalStatus = checkHalalStatus(data);
+    String halalStatus = checkHalalStatus(data);
 
     Get.defaultDialog(
       title: "Scan Result",
@@ -74,32 +82,150 @@ class ScanQrCodeController extends GetxController {
   }
 
 
+  String checkHalalStatus(String data) {
+    // Extract the E-code part from the "en:e471" format
+    final eCode = data.split(":").last.toUpperCase(); // Get the part after ':'
+
+    for (var code in ECode.eCodeStatus.keys) {
+      if (eCode.contains(code)) {
+        return ECode.eCodeStatus[code]!;
+      }
+    }
+
+    return "Unknown";
+  }
+
+  _processScannerData({
+    String? halalStatus,
+    String? foodImage,
+    String? foodName,
+    String? foodItems,
+    String? rawValue,
+  }) async {
+    // Check Halal Status
+    String status = checkHalalStatus(rawValue ?? '');
+
+    // Show Bottom Sheet
+    Get.bottomSheet(
+      Container(
+        padding:  EdgeInsets.all(16.r),
+        decoration:  BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.image); // Show an error icon if the image fails to load
+            }, height: 200.h, width: 200.w),
+
+            SizedBox(height: 30.h),
+            Text(
+              "Scan Result",
+              style: TextStyle(
+                fontSize: 22.h,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 10.h),
+
+            Text(
+              "Halal Status: $status",
+              style: TextStyle(
+                fontSize: 16.h,
+                fontWeight: FontWeight.bold,
+                color: status.contains("Haram") ? Colors.red : Colors.green,  // Color based on status
+              ),
+            ),
+             SizedBox(height: 10.h),
+
+            SelectableText(
+              foodName ?? 'Unknown Food',
+              style: TextStyle(fontSize: 16.h),
+            ),
+
+
+            SizedBox(height: 10.h),
+
+            SelectableText(
+              rawValue?.split(":").last.toUpperCase()  ?? 'Unknown Food',
+              style: TextStyle(fontSize: 16.h),
+            ),
+             SizedBox(height: 20.h),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.back();  // Close the bottom sheet
+                  scannerController.start();  // Restart the scanner
+                },
+                child: const Text("OK"),
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   Future<void> getECode(String barcode) async {
+    toggleScannerOpen();
+    update();
     final url = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$barcode.json');
 
     try {
       final response = await http.get(url);
-      print("-------------------code : ${response.statusCode}   \n ${response.body}");
+      print("-------------------code : ${response.statusCode} \n ${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 1) {
           String productName = data['product']['product_name'] ?? 'Unknown Product';
-          String eCode = data['product']['additives_tags'][0] ?? '$barcode';
+          String eCode = (data['product']['additives_tags']) == null
+              ? data['product']['additives_tags'][0]
+              : barcode;
 
+          String foodImage = data['product']['selected_images']['front']['display']['fr'] ?? '';
           print("📦 Product: $productName");
           print("🔢 E-Code: $eCode");
-          print("=== food product : ${data['product']['additives_tags']}");
-          processScannerData(eCode);
+
+          // Call the processScannerData with necessary details
+          _processScannerData(
+            halalStatus: checkHalalStatus(eCode),
+            foodImage: foodImage,
+            foodName: productName,
+            rawValue: eCode,
+          );
         } else {
           print("❌ No product found for this barcode.");
+          _processScannerData(
+            halalStatus: checkHalalStatus(barcode),
+            foodImage: "foodImage",
+            foodName: "❌ No product found for this barcode.",
+            rawValue: barcode,
+          );
+          update();
+          scannerController.stop();
         }
       } else {
         print("⚠️ Error fetching data.");
       }
     } catch (e, s) {
       print("🚨 Exception: $e");
-      print("🚨 Exception: $s");
+      print("🚨 StackTrace: $s");
     }
   }
+
+
+
+
 }
+
+
+
