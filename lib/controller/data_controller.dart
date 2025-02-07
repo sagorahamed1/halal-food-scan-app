@@ -99,7 +99,7 @@ class ScanQrCodeController extends GetxController {
     String? halalStatus,
     String? foodImage,
     String? foodName,
-    String? foodItems,
+    String? ingredients,
     String? rawValue,
   }) async {
     // Check Halal Status
@@ -157,6 +157,12 @@ class ScanQrCodeController extends GetxController {
               ),
             ),
             SizedBox(height: 10.h),
+
+            Text("Ingredients: $ingredients",        style: TextStyle(
+              fontSize: 22.h,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),),
 
             Text(
               "Status: $status",
