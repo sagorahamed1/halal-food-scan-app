@@ -399,3 +399,19 @@ class ECode{
 
 
 }
+
+
+
+
+
+// Text(
+// "Scan a barcode or QR code to check if the food is Halal, Haram, or Mushbooh",
+// textAlign: TextAlign.center,
+// style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w600),
+// ),
+// SizedBox(height: 50.h),
+// Text(
+// "Tap to scan now!",
+// textAlign: TextAlign.center,
+// style: TextStyle(fontSize: 28.h, fontWeight: FontWeight.w600),
+// ),

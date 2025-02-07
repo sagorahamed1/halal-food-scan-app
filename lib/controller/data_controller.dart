@@ -118,11 +118,36 @@ class ScanQrCodeController extends GetxController {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
-              return Icon(Icons.image); // Show an error icon if the image fails to load
-            }, height: 200.h, width: 200.w),
+            SizedBox(height: 20.h),
+
+            Center(
+              child: Column(
+                children: [
+                  Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(color: Colors.green)
+                    ),
+                    child: Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.image); // Show an error icon if the image fails to load
+                    }, height: 200.h, width: 200.w, fit: BoxFit.cover),
+                  ),
+
+                  SizedBox(height: 10.h),
+
+                  SelectableText(
+                    foodName ?? 'Unknown Food',
+                    style: TextStyle(fontSize: 18.h, fontWeight: FontWeight.w700),
+                  ),
+
+                ],
+              ),
+            ),
 
             SizedBox(height: 30.h),
+
+
             Text(
               "Scan Result",
               style: TextStyle(
@@ -134,7 +159,7 @@ class ScanQrCodeController extends GetxController {
             SizedBox(height: 10.h),
 
             Text(
-              "Halal Status: $status",
+              "Status: $status",
               style: TextStyle(
                 fontSize: 16.h,
                 fontWeight: FontWeight.bold,
@@ -143,10 +168,6 @@ class ScanQrCodeController extends GetxController {
             ),
              SizedBox(height: 10.h),
 
-            SelectableText(
-              foodName ?? 'Unknown Food',
-              style: TextStyle(fontSize: 16.h),
-            ),
 
 
             SizedBox(height: 10.h),
@@ -174,10 +195,13 @@ class ScanQrCodeController extends GetxController {
     );
   }
 
+
+  RxBool getCodeLoading = false.obs;
   Future<void> getECode(String barcode) async {
+    getCodeLoading(true);
     toggleScannerOpen();
     update();
-    final url = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$barcode.json');
+    final url = Uri.parse('https://world.openfoodfacts.org/api/v7/product/$barcode.json');
 
     try {
       final response = await http.get(url);
@@ -187,8 +211,9 @@ class ScanQrCodeController extends GetxController {
         final data = json.decode(response.body);
         if (data['status'] == 1) {
           String productName = data['product']['product_name'] ?? 'Unknown Product';
-          String eCode = (data['product']['additives_tags']) == null
-              ? data['product']['additives_tags'][0]
+          String eCode = (data['product']?['additives_tags'] != null &&
+              (data['product']?['additives_tags'] as List).isNotEmpty)
+              ? data['product']!['additives_tags'][0]
               : barcode;
 
           String foodImage = data['product']['selected_images']['front']['display']['fr'] ?? '';
@@ -213,16 +238,25 @@ class ScanQrCodeController extends GetxController {
           update();
           scannerController.stop();
         }
+        getCodeLoading(false);
       } else {
         print("⚠️ Error fetching data.");
+        _processScannerData(
+          halalStatus: checkHalalStatus(barcode),
+          foodImage: "foodImage",
+          foodName: "❌ No product found for this barcode.",
+          rawValue: barcode,
+        );
+        update();
+        scannerController.stop();
+        getCodeLoading(false);
       }
     } catch (e, s) {
+      getCodeLoading(false);
       print("🚨 Exception: $e");
       print("🚨 StackTrace: $s");
     }
   }
-
-
 
 
 }

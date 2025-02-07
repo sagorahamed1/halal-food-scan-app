@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -23,17 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Scan a barcode or QR code to check if the food is Halal, Haram, or Mushbooh",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 50.h),
-            Text(
-              "Tap to scan now!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 28.h, fontWeight: FontWeight.w600),
-            ),
+
             SizedBox(height: 24.h),
             Obx(() {
               return !controller.isScannerOpen.value
@@ -69,8 +60,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             onDetect: (barcodes) {
                               final barcode = barcodes.barcodes.first;
                               if (barcode.rawValue != null) {
-                                controller
-                                    .getECode(barcode.rawValue.toString());
+                                _playSound();
+                                if(!controller.getCodeLoading.value) {
+                                  controller.getECode(barcode.rawValue.toString());
+                                }
+
                               }
                             },
                           ),
@@ -79,6 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
             }),
             SizedBox(height: 100.h),
+
+
+
             ElevatedButton(
               onPressed: () {
                 controller.toggleFlash();
@@ -93,4 +90,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  // Play sound effect
+  void _playSound() async {
+    // Replace with your own asset or URL for the sound file
+    // await _audioPlayer.play(AssetSource('sound.mp3'), volume: 2);
+  }
 }
+
+
+// additives_tags
+// ingredients_text
+// product_name
