@@ -101,100 +101,198 @@ class ScanQrCodeController extends GetxController {
     String? foodName,
     String? ingredients,
     String? rawValue,
+    String? certification,
+    String? countries,
+    String? nutritionGrades,
   }) async {
     // Check Halal Status
     String status = checkHalalStatus(rawValue ?? '');
 
     // Show Bottom Sheet
     Get.bottomSheet(
-      Container(
-        padding:  EdgeInsets.all(16.r),
-        decoration:  BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            SizedBox(height: 20.h),
-
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(color: Colors.green)
+      SingleChildScrollView(
+        child: Container(
+          padding:  EdgeInsets.all(16.r),
+          decoration:  BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+        
+              SizedBox(height: 20.h),
+        
+        
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  color: Colors.green,
+                ),
+                child: Column(
+                  children: [
+        
+        
+                    Center(
+                      child: Text(
+                        "This food is $certification",
+                        style: TextStyle(
+                          fontSize: 22.h,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ),
-                    child: Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.image); // Show an error icon if the image fails to load
-                    }, height: 200.h, width: 200.w, fit: BoxFit.cover),
-                  ),
 
-                  SizedBox(height: 10.h),
 
-                  SelectableText(
-                    foodName ?? 'Unknown Food',
-                    style: TextStyle(fontSize: 18.h, fontWeight: FontWeight.w700),
-                  ),
 
-                ],
+                    Text(
+                      "$certification",
+                      style: TextStyle(
+                        fontSize: 16.h,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                    ),
+
+
+
+
+                  ],
+                ),
               ),
-            ),
+        
+        
+              SizedBox(height: 24.h),
+        
+              Center(
+                child: Column(
+                  children: [
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(color: Colors.green)
+                      ),
+                      child: Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.image); // Show an error icon if the image fails to load
+                      }, height: 200.h, width: 200.w, fit: BoxFit.cover),
+                    ),
+        
+                    SizedBox(height: 10.h),
+        
+                    SelectableText(
+                      foodName ?? 'Unknown Food',
+                      style: TextStyle(fontSize: 18.h, fontWeight: FontWeight.w700),
+                    ),
+        
+                  ],
+                ),
+              ),
+        
+              SizedBox(height: 30.h),
+        
+        
+              Text(
+                "Nutrition Grade ($nutritionGrades)",
+                style: TextStyle(
+                  fontSize: 22.h,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+        
+        
+              Image.asset("assets/images/nova$nutritionGrades.png"),
 
-            SizedBox(height: 30.h),
+        
+              SizedBox(height: 10.h),
 
+        
 
-            Text(
-              "Scan Result",
-              style: TextStyle(
+              Text("Ingredients",
+                  style: TextStyle(
                 fontSize: 22.h,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
+              )),
+
+
+
+
+              SizedBox(height: 10.h),
+
+              Text("$ingredients",
+                  style: TextStyle(
+                    fontSize: 16.h,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black87,
+                  )),
+
+
+
+
+              SizedBox(height: 10.h),
+        
+              Text("Additive",
+                  style: TextStyle(
+                    fontSize: 22.h,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  )),
+        
+        
+              SizedBox(height: 10.h),
+        
+              SelectableText(
+                rawValue?.split(":").last.toUpperCase()  ?? 'Unknown Food',
+                style: TextStyle(fontSize: 16.h),
               ),
-            ),
-            SizedBox(height: 10.h),
 
-            Text("Ingredients: $ingredients",        style: TextStyle(
-              fontSize: 22.h,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),),
 
-            Text(
-              "Status: $status",
-              style: TextStyle(
-                fontSize: 16.h,
-                fontWeight: FontWeight.bold,
-                color: status.contains("Haram") ? Colors.red : Colors.green,  // Color based on status
+
+              SizedBox(height: 10.h),
+
+              Text("Country List",
+                  style: TextStyle(
+                    fontSize: 22.h,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  )),
+
+
+              SizedBox(height: 10.h),
+
+              SelectableText(
+                 "$countries"  ?? 'Unknown Food',
+                style: TextStyle(fontSize: 16.h),
               ),
-            ),
-             SizedBox(height: 10.h),
 
 
 
-            SizedBox(height: 10.h),
 
-            SelectableText(
-              rawValue?.split(":").last.toUpperCase()  ?? 'Unknown Food',
-              style: TextStyle(fontSize: 16.h),
-            ),
-             SizedBox(height: 20.h),
+              SizedBox(height: 20.h),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.back();  // Close the bottom sheet
-                  scannerController.start();  // Restart the scanner
-                },
-                child: const Text("OK"),
+
+
+        
+        
+        
+        
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();  // Close the bottom sheet
+                    scannerController.start();  // Restart the scanner
+                  },
+                  child: const Text("OK"),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,
@@ -221,6 +319,9 @@ class ScanQrCodeController extends GetxController {
               (data['product']?['additives_tags'] as List).isNotEmpty)
               ? data['product']!['additives_tags'][0]
               : barcode;
+          String ingredients = data["product"]["allergens_from_ingredients"] ?? "There are no ingredient found!";
+          String countries = data["product"]["countries"] ?? "There are no countries found!";
+          String nutritionGrades = data["product"]["nutrition_grades"] == "unknown" ? "1" : "2";
 
           String foodImage = data['product']['selected_images']['front']['display']['fr'] ?? '';
           print("📦 Product: $productName");
@@ -232,6 +333,10 @@ class ScanQrCodeController extends GetxController {
             foodImage: foodImage,
             foodName: productName,
             rawValue: eCode,
+            ingredients: ingredients,
+            certification: checkHalalStatus(eCode),
+            countries: countries,
+            nutritionGrades: nutritionGrades
           );
         } else {
           print("❌ No product found for this barcode.");
@@ -252,6 +357,8 @@ class ScanQrCodeController extends GetxController {
           foodImage: "foodImage",
           foodName: "❌ No product found for this barcode.",
           rawValue: barcode,
+            ingredients: "solt, banana, etc",
+            certification: "HALAL"
         );
         update();
         scannerController.stop();
