@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void loadBannerAd() {
     bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-7278830824707729/1195700970',
+      adUnitId: 'ca-app-pub-9708681920217106/8552391981',
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
