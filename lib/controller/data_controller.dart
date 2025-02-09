@@ -49,7 +49,6 @@ class ScanQrCodeController extends GetxController {
   }
 
 
-
   Future<void> processScannerData(String data) async {
     scannerController.stop();
     String halalStatus = checkHalalStatus(data);
@@ -84,7 +83,10 @@ class ScanQrCodeController extends GetxController {
 
   String checkHalalStatus(String data) {
     // Extract the E-code part from the "en:e471" format
-    final eCode = data.split(":").last.toUpperCase(); // Get the part after ':'
+    final eCode = data
+        .split(":")
+        .last
+        .toUpperCase(); // Get the part after ':'
 
     for (var code in ECode.eCodeStatus.keys) {
       if (eCode.contains(code)) {
@@ -92,7 +94,7 @@ class ScanQrCodeController extends GetxController {
       }
     }
 
-    return "Unknown";
+    return "There is no halal certification for this product!";
   }
 
   _processScannerData({
@@ -105,15 +107,12 @@ class ScanQrCodeController extends GetxController {
     String? countries,
     String? nutritionGrades,
   }) async {
-    // Check Halal Status
-    String status = checkHalalStatus(rawValue ?? '');
-
     // Show Bottom Sheet
     Get.bottomSheet(
       SingleChildScrollView(
         child: Container(
-          padding:  EdgeInsets.all(16.r),
-          decoration:  BoxDecoration(
+          padding: EdgeInsets.all(16.r),
+          decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
           ),
@@ -121,176 +120,152 @@ class ScanQrCodeController extends GetxController {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        
-              SizedBox(height: 20.h),
-        
-        
+
+              SizedBox(height: 30.h),
+
+              // Certification Status Section
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20.r),
                   color: Colors.green,
                 ),
-                child: Column(
-                  children: [
-        
-        
-                    Center(
-                      child: Text(
-                        "This food is $certification",
-                        style: TextStyle(
-                          fontSize: 22.h,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-
-
-
-                    Text(
-                      "$certification",
+                child: Padding(
+                  padding: EdgeInsets.all(20.r),
+                  child: Center(
+                    child: Text(
+                      certification == "This is not food"
+                          ? "No food found with this code"
+                          : certification == "There is no halal certification for this product!"
+                          ? "No Halal certification for this product"
+                          : "This food is $certification",
                       style: TextStyle(
-                        fontSize: 16.h,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black87,
+                        fontSize: 20.h,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
                     ),
-
-
-
-
-                  ],
+                  ),
                 ),
               ),
-        
-        
+
               SizedBox(height: 24.h),
-        
+
+              // Food Image and Name
               Center(
                 child: Column(
                   children: [
                     Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(color: Colors.green)
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(color: Colors.green)
                       ),
-                      child: Image.network(foodImage ?? '', errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.image); // Show an error icon if the image fails to load
-                      }, height: 200.h, width: 200.w, fit: BoxFit.cover),
+                      child: Image.network(
+                        foodImage ?? '',
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.image, size: 100.r, color: Colors.grey); // Error Icon if image fails to load
+                        },
+                        height: 200.h,
+                        width: 200.w,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-        
                     SizedBox(height: 10.h),
-        
                     SelectableText(
                       foodName ?? 'Unknown Food',
                       style: TextStyle(fontSize: 18.h, fontWeight: FontWeight.w700),
                     ),
-        
                   ],
                 ),
               ),
-        
+
               SizedBox(height: 30.h),
-        
-        
+
+              // Nutrition Grade Section
               Text(
                 "Nutrition Grade ($nutritionGrades)",
-                style: TextStyle(
-                  fontSize: 22.h,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w700, color: Colors.black87),
               ),
-        
-        
+              SizedBox(height: 10.h),
               Image.asset("assets/images/nova$nutritionGrades.png"),
 
-        
-              SizedBox(height: 10.h),
+              SizedBox(height: 30.h),
 
-        
-
-              Text("Ingredients",
-                  style: TextStyle(
-                fontSize: 22.h,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              )),
-
-
-
-
-              SizedBox(height: 10.h),
-
-              Text("$ingredients",
-                  style: TextStyle(
-                    fontSize: 16.h,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black87,
-                  )),
-
-
-
-
-              SizedBox(height: 10.h),
-        
-              Text("Additive",
-                  style: TextStyle(
-                    fontSize: 22.h,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  )),
-        
-        
-              SizedBox(height: 10.h),
-        
-              SelectableText(
-                rawValue?.split(":").last.toUpperCase()  ?? 'Unknown Food',
-                style: TextStyle(fontSize: 16.h),
+              // Ingredients Section
+              Text(
+                "Ingredients",
+                style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w700, color: Colors.black87),
               ),
-
-
-
               SizedBox(height: 10.h),
-
-              Text("Country List",
-                  style: TextStyle(
-                    fontSize: 22.h,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  )),
-
-
-              SizedBox(height: 10.h),
-
-              SelectableText(
-                 "$countries"  ?? 'Unknown Food',
-                style: TextStyle(fontSize: 16.h),
+              Text(
+                ingredients?.isEmpty ?? true
+                    ? "No ingredients found!"
+                    : ingredients!
+                    .split(",")
+                    .map((item) => item.trim().replaceFirst(RegExp(r'en:\s*'), ''))
+                    .join(", "),
+                style: TextStyle(fontSize: 16.h, color: Colors.black87),
               ),
-
-
-
 
               SizedBox(height: 20.h),
 
+              // Additives Detected Section
+              Text(
+                "Additives Detected",
+                style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w700, color: Colors.black87),
+              ),
+              SizedBox(height: 10.h),
+              SelectableText(
+                rawValue?.split(":").last.toUpperCase() ?? 'Unknown Additive',
+                style: TextStyle(fontSize: 16.h),
+              ),
 
+              SizedBox(height: 20.h),
 
-        
-        
-        
-        
+              // Country List Section
+              Text(
+                "Country List",
+                style: TextStyle(fontSize: 22.h, fontWeight: FontWeight.w700, color: Colors.black87),
+              ),
+              SizedBox(height: 10.h),
+              SelectableText(
+                countries?.isEmpty ?? true
+                    ? "No country information found!"
+                    : countries!
+                    .split(",")
+                    .map((item) => item.trim().replaceFirst(RegExp(r'en:\s*'), ''))
+                    .join(", "),
+                style: TextStyle(fontSize: 16.h),
+              ),
+
+              SizedBox(height: 30.h),
+
+              // Back Button
               Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.back();  // Close the bottom sheet
-                    scannerController.start();  // Restart the scanner
+                child: GestureDetector(
+                  onTap: () {
+                    Get.back(); // Close the bottom sheet
+                    scannerController.start(); // Restart the scanner
                   },
-                  child: const Text("OK"),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(color: Colors.green)
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                      child: Text(
+                        "Go Back",
+                        style: TextStyle(fontSize: 16.h, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
                 ),
               ),
+
+              SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -300,51 +275,72 @@ class ScanQrCodeController extends GetxController {
   }
 
 
+
   RxBool getCodeLoading = false.obs;
+
   Future<void> getECode(String barcode) async {
     getCodeLoading(true);
     toggleScannerOpen();
     update();
-    final url = Uri.parse('https://world.openfoodfacts.org/api/v7/product/$barcode.json');
+    final url = Uri.parse(
+        'https://world.openfoodfacts.org/api/v7/product/$barcode.json');
 
     try {
       final response = await http.get(url);
-      print("-------------------code : ${response.statusCode} \n ${response.body}");
+
+      print("-------------------code : ${response.statusCode} \n ${response
+          .body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print("-------------------status : ${data['status']}");
         if (data['status'] == 1) {
-          String productName = data['product']['product_name'] ?? 'Unknown Product';
+          String productName = data['product']['product_name'] ??
+              'Unknown Product';
           String eCode = (data['product']?['additives_tags'] != null &&
               (data['product']?['additives_tags'] as List).isNotEmpty)
               ? data['product']!['additives_tags'][0]
               : barcode;
-          String ingredients = data["product"]["allergens_from_ingredients"] ?? "There are no ingredient found!";
-          String countries = data["product"]["countries"] ?? "There are no countries found!";
-          String nutritionGrades = data["product"]["nutrition_grades"] == "unknown" ? "1" : "2";
+          String ingredients = data["product"]["allergens_from_ingredients"] ??
+              "There are no ingredient found!";
+          String countries = data["product"]["countries_tags"]?.toString() ??
+              "There are no countries found!";
 
-          String foodImage = data['product']['selected_images']['front']['display']['fr'] ?? '';
+          String nutrition = data["product"]["nutrition_grades"];
+          String nutritionGrades = nutrition == "unknown" ? "1" :
+          nutrition.toLowerCase() == "a" ? "2" : nutrition.toLowerCase() == "b"
+              ? "3"
+              : nutrition.toLowerCase() == "c" ? "4"
+              : nutrition.toLowerCase() == "d" ? "5" : nutrition
+              .toLowerCase() == "e" ? "6" : "1";
+
+          String foodImage = data['product']['selected_images']['front']['display']['fr'] ??
+              '';
           print("📦 Product: $productName");
           print("🔢 E-Code: $eCode");
 
           // Call the processScannerData with necessary details
           _processScannerData(
-            halalStatus: checkHalalStatus(eCode),
-            foodImage: foodImage,
-            foodName: productName,
-            rawValue: eCode,
-            ingredients: ingredients,
-            certification: checkHalalStatus(eCode),
-            countries: countries,
-            nutritionGrades: nutritionGrades
+              halalStatus: checkHalalStatus(eCode),
+              foodImage: foodImage,
+              foodName: productName,
+              rawValue: eCode,
+              ingredients: ingredients,
+              certification: checkHalalStatus(eCode),
+              countries: countries,
+              nutritionGrades: nutritionGrades
           );
         } else {
           print("❌ No product found for this barcode.");
           _processScannerData(
-            halalStatus: checkHalalStatus(barcode),
-            foodImage: "foodImage",
-            foodName: "❌ No product found for this barcode.",
-            rawValue: barcode,
+              halalStatus: checkHalalStatus(barcode),
+              foodImage: "https://online.anyflip.com/kant/ecyh/files/mobile/1.jpg",
+              foodName: "❌ No product found for this barcode.",
+              rawValue: barcode,
+              ingredients: "There are no ingredients found",
+              certification: "This is not food",
+              nutritionGrades: "1",
+              countries: "No country found!"
           );
           update();
           scannerController.stop();
@@ -353,12 +349,14 @@ class ScanQrCodeController extends GetxController {
       } else {
         print("⚠️ Error fetching data.");
         _processScannerData(
-          halalStatus: checkHalalStatus(barcode),
-          foodImage: "foodImage",
-          foodName: "❌ No product found for this barcode.",
-          rawValue: barcode,
-            ingredients: "solt, banana, etc",
-            certification: "HALAL"
+            halalStatus: checkHalalStatus(barcode),
+            foodImage: "https://online.anyflip.com/kant/ecyh/files/mobile/1.jpg",
+            foodName: "❌ No product found for this barcode.",
+            rawValue: barcode,
+            ingredients: "There are no ingredients found",
+            certification: "This is not food",
+            nutritionGrades: "1",
+            countries: "No country found!"
         );
         update();
         scannerController.stop();

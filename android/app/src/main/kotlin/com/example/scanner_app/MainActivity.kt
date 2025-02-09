@@ -1,4 +1,4 @@
-package com.example.scanner_app_e_code
+package com.sagorahammed.halalfoodscanner
 
 import io.flutter.embedding.android.FlutterActivity
 

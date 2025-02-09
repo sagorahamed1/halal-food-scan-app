@@ -6,6 +6,7 @@ import 'package:scanner_app/screens/splash/splash_screen.dart';
 
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -20,12 +21,12 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return GetMaterialApp(
               debugShowCheckedModeBanner: false,
-              title: 'Flutter Demo',
+              title: 'Halal Food Scanner(E-Code)',
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
                 useMaterial3: true,
               ),
-              home:  HomeScreen());
+              home:  SplashScreen());
         },
       );
 
